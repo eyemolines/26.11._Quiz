@@ -1,7 +1,7 @@
 import type { ChoiceNumber, Question } from "./types";
 
 export type ParseResult =
-  | { ok: true; questions: Question[] }
+  | { ok: true; title: string; questions: Question[] }
   | { ok: false; errors: string[] };
 
 /** 화면에 한꺼번에 보여줄 오류 개수. 나머지는 "외 N건"으로 묶습니다. */
@@ -44,7 +44,7 @@ function checkQuestion(item: unknown, number: number): string[] {
 }
 
 /**
- * 업로드한 문제 파일의 글자 내용을 읽어 문항 목록으로 바꿉니다.
+ * 문제지 파일의 글자 내용을 읽어 제목과 문항 목록으로 바꿉니다.
  * 형식에 맞지 않는 곳이 하나라도 있으면 파일 전체를 받지 않고 이유를 알려줍니다.
  */
 export function parseQuizFile(text: string): ParseResult {
@@ -63,12 +63,15 @@ export function parseQuizFile(text: string): ParseResult {
     return { ok: false, errors: ["파일에 문제 목록(questions)이 없습니다."] };
   }
 
-  const items = (data as { questions: unknown[] }).questions;
+  const { title, questions: items } = data as { title?: unknown; questions: unknown[] };
   if (items.length === 0) {
     return { ok: false, errors: ["파일에 문제가 하나도 없습니다."] };
   }
 
   const errors = items.flatMap((item, i) => checkQuestion(item, i + 1));
+  if (!isNonEmptyString(title)) {
+    errors.unshift("문제지 제목(title)이 없습니다.");
+  }
   if (errors.length > 0) {
     const shown = errors.slice(0, MAX_ERRORS_SHOWN);
     if (errors.length > MAX_ERRORS_SHOWN) {
@@ -83,5 +86,5 @@ export function parseQuizFile(text: string): ParseResult {
     correctAnswer: q.correctAnswer as ChoiceNumber,
     explanation: q.explanation as string,
   }));
-  return { ok: true, questions };
+  return { ok: true, title: (title as string).trim(), questions };
 }

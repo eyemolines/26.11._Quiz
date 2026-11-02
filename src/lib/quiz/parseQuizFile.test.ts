@@ -10,19 +10,27 @@ const validQuestion = {
   explanation: "1 더하기 1은 2입니다.",
 };
 
-function fileWith(questions: unknown[]): string {
-  return JSON.stringify({ questions });
+function fileWith(questions: unknown[], title: unknown = "시험 문제지"): string {
+  return JSON.stringify({ title, questions });
 }
 
 describe("parseQuizFile", () => {
-  it("예시 파일의 10문항을 모두 읽는다", () => {
-    const text = readFileSync(join(process.cwd(), "sample-questions.json"), "utf8");
+  it("중학교 문제지의 제목과 10문항을 모두 읽는다", () => {
+    const text = readFileSync(join(process.cwd(), "question-papers", "sample-questions.json"), "utf8");
     const result = parseQuizFile(text);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
+    expect(result.title).toBe("중학교 정보과목");
     expect(result.questions).toHaveLength(10);
     expect(result.questions[0].correctAnswer).toBe(4);
     expect(result.questions[0].options[3]).toBe("키보드");
+  });
+
+  it("제목(title)이 없거나 비어 있으면 거부한다", () => {
+    const noTitle = JSON.stringify({ questions: [validQuestion] });
+    for (const text of [noTitle, ...[null, "", "   ", 3].map((title) => fileWith([validQuestion], title))]) {
+      expect(parseQuizFile(text)).toEqual({ ok: false, errors: ["문제지 제목(title)이 없습니다."] });
+    }
   });
 
   it("파일 맨 앞의 BOM 문자가 있어도 읽는다", () => {

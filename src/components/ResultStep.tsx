@@ -2,6 +2,7 @@ import { formatScore, grade } from "@/lib/quiz/grade";
 import type { Answer, Question } from "@/lib/quiz/types";
 
 type Props = {
+  title: string;
   questions: Question[];
   answers: Answer[];
 };
@@ -10,13 +11,14 @@ function optionText(question: Question, choice: Answer): string {
   return choice === null ? "고르지 않음" : `${choice}. ${question.options[choice - 1]}`;
 }
 
-export default function ResultStep({ questions, answers }: Props) {
+export default function ResultStep({ title, questions, answers }: Props) {
   const result = grade(questions, answers);
 
   return (
     <>
       <section className="card score-card">
         <h2>채점 결과</h2>
+        <p className="muted paper-name">{title}</p>
         <p className="score">{formatScore(result.score)}점</p>
         <p className="muted">
           {result.total}문제 중 {result.correctCount}문제 정답
