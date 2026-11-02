@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.env*
+.vercel
+
+# 이전 대화 저장본 (이메일·전체 대화 포함, 기록하지 않음)
+대화기록/
